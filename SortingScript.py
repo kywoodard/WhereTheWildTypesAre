@@ -249,11 +249,11 @@ class DataTracker:
 	def findPersistentData(self):
 		self.persistentTrackedData_High = []
 		for dataset in self.trackedDataSet_High:
-			if len(dataset)==3:
+			if len(dataset)==len(self.dataAnalyzerList):
 				self.persistentTrackedData_High.append(dataset)
 		self.persistentTrackedData_Low = []
 		for dataset in self.trackedDataSet_Low:
-			if len(dataset)==3:
+			if len(dataset)==len(self.dataAnalyzerList):
 				self.persistentTrackedData_Low.append(dataset)
 				
 	def getTrackedDataHigh(self):
@@ -281,7 +281,6 @@ class CSVGenerator:
 		# self.DataTracker.trackedDataSet_High
 		# self.DataTracker.trackedDataSet_Low
 		# self.DataTracker.persistentTrackedData_High
-		
 
 	def writeToFile(self):
 		self.writeMultDataSet(self.dataTracker.persistentTrackedData_High,'persistentTrackedData_High')
@@ -312,7 +311,7 @@ if __name__ == "__main__":
 	fileReader.updateFiles()
 	fileList = fileReader.getFileList()
 	timeList = fileReader.getTimeList()
-	
+
 	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
 	dataTracker = DataTracker(dataAnalyzerList)
 
