@@ -310,7 +310,9 @@ class CSVGenerator:
 if __name__ == "__main__":
 	fileReader = FileReaderGUI()
 	fileReader.updateFiles()
-
+	fileList = fileReader.getFileList()
+	timeList = fileReader.getTimeList()
+	
 	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
 	dataTracker = DataTracker(dataAnalyzerList)
 
