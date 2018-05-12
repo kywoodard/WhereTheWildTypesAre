@@ -1,0 +1,2 @@
+python UnitTests/UnitTest_DataAnalyzer.py
+python UnitTests/UnitTest_DataTracker.py
