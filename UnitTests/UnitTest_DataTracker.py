@@ -17,6 +17,17 @@ class TestDataTracker(unittest.TestCase):
 		self.DA_List = [DataAnalyzer(filePathList[i],self.timeList[i]) for i in range(len(filePathList))]
 		self.DT = DataTracker(self.DA_List)
 
+	def test_NoEmptyDatasets(self):
+		#Get data and check that it is not empty
+		self.assertTrue(self.DT.getTrackedDataHigh(),
+						'trackedDataHigh is empty')
+		self.assertTrue(self.DT.getTrackedDataLow(),
+						'trackedDataLow is empty')
+		self.assertTrue(self.DT.getPersistentTrackedDataHigh(),
+						'persistentTrackedDataHigh is empty')
+		self.assertTrue(self.DT.getPersistentTrackedDataLow(),
+						'persistentTrackedDataLow is empty')
+
 	def test_TrackedDataUnique(self):
 		trackedDataHigh = self.DT.getTrackedDataHigh()
 		for i in range(len(trackedDataHigh)):

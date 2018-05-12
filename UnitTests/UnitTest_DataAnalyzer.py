@@ -36,6 +36,40 @@ class TestDataAnalyzer(unittest.TestCase):
 		# 			print dataAnalyzer.numRows
 		# 			assert dataAnalyzer.rawData[i][0] != dataAnalyzer.rawData[j][0], 'Raw data from file has to all have unique names'
 
+	def test_NoEmptyDatasets(self):
+		#Get data and check that it is not empty
+		for dataAnalyzer in self.DA_List:
+			self.assertTrue(dataAnalyzer.getFilename(),
+							'Filename is empty')
+			self.assertTrue(dataAnalyzer.getTimeValue()>=0.0,
+							'TimeValue is empty or negative')
+			self.assertTrue(dataAnalyzer.getTitles(),
+							'Titles is empty')
+			self.assertTrue(dataAnalyzer.getTopNumber(),
+							'TopNumber is empty')
+			self.assertTrue(dataAnalyzer.getRawData(),
+							'RawData is empty')
+			self.assertTrue(dataAnalyzer.getSortedLog2WTAscending(),
+							'SortedLog2WTAscending is empty')
+			self.assertTrue(dataAnalyzer.getSortedLog2WTDescending(),
+							'SortedLog2WTDescending is empty')
+			self.assertTrue(dataAnalyzer.getSortedLog2MUTAscending(),
+							'SortedLog2MUTAscending is empty')
+			self.assertTrue(dataAnalyzer.getSortedLog2MUTDescending(),
+							'SortedLog2MUTDescending is empty')
+			self.assertTrue(dataAnalyzer.getHighSortedLog2WT(),
+							'HighSortedLog2WT is empty')
+			self.assertTrue(dataAnalyzer.getLowSortedLog2WT(),
+							'LowSortedLog2WT is empty')
+			self.assertTrue(dataAnalyzer.getHighSortedLog2MUT(),
+							'HighSortedLog2MUT is empty')
+			self.assertTrue(dataAnalyzer.getLowSortedLog2MUT(),
+							'LowSortedLog2MUT is empty')
+			self.assertTrue(dataAnalyzer.getUniqueHighSortedLog2MUT(),
+							'UniqueHighSortedLog2MUT is empty')
+			self.assertTrue(dataAnalyzer.getUniqueLowSortedLog2MUT(),
+							'UniqueLowSortedLog2MUT is empty')
+
 	def checkSorted(self,data,columnNum,sortedAscending = 1):
 		#If the list should be ascending as it goes down (lowest values first)
 		if sortedAscending:
