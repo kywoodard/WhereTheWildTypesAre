@@ -12,20 +12,23 @@ import sys
 
 
 class FileReaderGUI:
-	#TODO: Make distructor for GUI
-	#TODO: Make it so the GUI will stay open
+	#Initiliaze class variables
+	timeList = []
+	fileList = []
+	selectedList = []
+	deselectedList =[]
+	finishedUpdate = False
 
 	def __init__(self):
-		self.timeList = []
-		self.fileList = []
-		self.finishedUpdate = False
 		self.root = tk.Tk()
 		self.root.title('')
 		self.root.geometry("300x275")
 		self.center(self.root)
 		#Setting up Widgets
+		#Input Frame
+		self.inputFrame = tk.Frame(self.root)
 		#Listbox
-		self.lbFrame = tk.Frame(self.root)
+		self.lbFrame = tk.Frame(self.inputFrame)
 		self.yScroll = tk.Scrollbar(self.lbFrame, orient=tk.VERTICAL)
 		self.lb = tk.Listbox(self.lbFrame,width=30,
 								yscrollcommand = self.yScroll.set)
@@ -38,12 +41,12 @@ class FileReaderGUI:
 
 		#Input File text frame
 		self.statusVar = tk.StringVar()
-		self.status = tk.Label(self.root,textvariable=self.statusVar,fg='red')
+		self.status = tk.Label(self.inputFrame,textvariable=self.statusVar,fg='red')
 		self.statusVar.set('')
 		self.status.pack()
 
 		#Input File text frame
-		self.textFrame = tk.LabelFrame(self.root,labelanchor='n',text='Input # minutes then click Add File')
+		self.textFrame = tk.LabelFrame(self.inputFrame,labelanchor='n',text='Input # minutes then click Add File')
 		self.e = tk.Entry(self.textFrame)
 		self.textFrame.pack()
 		self.e.grid(row=0,column=0,padx=2,pady=3)
@@ -51,10 +54,11 @@ class FileReaderGUI:
 		self.b1.grid(row=0,column=1)
 
 		# Run button
-		self.b2 = tk.Button(self.root,text='Run',command=self.finishedInput)
+		self.b2 = tk.Button(self.inputFrame,text='Analyze Data',command=self.finishedInput)
 		self.b2.pack()
 		self.e.focus_set()
 		self.root.bind('<Return>', self.getTimeInput)
+		self.inputFrame.pack(side=LEFT,fill=BOTH,expand=1)
 
 	def getTimeInput(self,event=None):
 		inputString = self.e.get()
@@ -76,14 +80,67 @@ class FileReaderGUI:
 			filename = filename.split('/')
 			displayOutput = str(timeValue)+'  '+filename[-1]
 			self.lb.insert(len(self.fileList)-1,displayOutput)
-			
-
+	
 	def finishedInput(self):
 		if self.timeList:
-			self.finishedUpdate = True
+			# self.finishedUpdate = True
 			self.statusVar.set('')
+			dataTracker = runAnalysis(self.timeList,self.fileList)
+
+			#Resize the screen
+			self.root.geometry("1000x275")
+			self.center(self.root)
+
+			#DataFrame
+			self.outputFrame = tk.Frame(self.root)
+			self.dataSelectionFrame = tk.Frame(self.outputFrame)
+			#DataSelectBox with y-scroll
+			self.yDataDeselectedScroll = tk.Scrollbar(self.dataSelectionFrame, orient=tk.VERTICAL)
+			self.dataDeselectedBox = tk.Listbox(self.dataSelectionFrame,width=30,
+									yscrollcommand = self.yDataDeselectedScroll.set)
+			self.yDataDeselectedScroll['command'] = self.dataDeselectedBox.yview
+
+			#DataDeselectBox with y-scroll
+			self.yDataSelectedScroll = tk.Scrollbar(self.dataSelectionFrame, orient=tk.VERTICAL)
+			self.dataSelectedBox = tk.Listbox(self.dataSelectionFrame,width=30,yscrollcommand = self.yDataSelectedScroll.set)
+			self.yDataSelectedScroll['command'] = self.dataSelectedBox.yview
+
+			#Select/Deselct data frame
+			self.selectionFrame = tk.Frame(self.dataSelectionFrame)
+			#Select Button
+			self.selectButton = tk.Button(self.selectionFrame,text='>>',command=self.selectData)
+			self.selectButton.pack(side = TOP,padx=5)
+			#Deselect Button
+			self.deselectButton = tk.Button(self.selectionFrame,text='<<',command=self.deselectData)
+			self.deselectButton.pack(side = TOP,padx=5)
+
+			#Deselect Button
+			self.CSVButton = tk.Button(self.outputFrame,text='CSV Output',command=self.outputCSV)
+			
+			#Packing
+			self.yDataSelectedScroll.pack(side = RIGHT,fill=Y)
+			self.dataSelectedBox.pack(side = RIGHT,fill=BOTH,expand=1,padx=5,pady=5)
+			self.selectionFrame.pack(side=RIGHT)
+			self.yDataDeselectedScroll.pack(side = RIGHT,fill=Y)
+			
+			self.dataDeselectedBox.pack(side = RIGHT,fill=BOTH,expand=1,padx=5,pady=5)
+			self.dataSelectionFrame.pack(side=TOP,fill=BOTH,expand=1)
+			self.CSVButton.pack(side=TOP,pady=5)
+			self.outputFrame.pack(side=RIGHT,fill=BOTH,expand=1)
+
+			self.addDataSets(dataTracker)
 		else:
 			self.statusVar.set('Cannot run data analysis without any files added')
+
+	def addDataSets(self,dataTracker):
+		self.dataDeselectedBox.insert(0,'High_Tracked_Dataset')
+		self.deselectedList.append('trackedDataSet_High')
+		self.dataDeselectedBox.insert(1,'Low_Tracked_Dataset')
+		self.deselectedList.append('trackedDataSet_Low')
+		self.dataDeselectedBox.insert(2,'High_Persistent_Tracked_Dataset')
+		self.deselectedList.append('persistentTrackedData_High')
+		self.dataDeselectedBox.insert(3,'Low_Persistent_Tracked_Dataset')
+		self.deselectedList.append('persistentTrackedData_Low')
 
 	def updateFiles(self):
 		while not self.finishedUpdate:
@@ -109,6 +166,36 @@ class FileReaderGUI:
 			del self.fileList[currentIndex[0]]
 		else:
 			self.statusVar.set('Nothing Selected to Delete')
+
+	def selectData(self):
+		currentIndex = self.dataDeselectedBox.curselection()
+		if currentIndex:
+			currDataSet = self.dataDeselectedBox.get(currentIndex)
+			self.dataSelectedBox.insert(END,currDataSet)
+			self.selectedList.append(self.deselectedList[currentIndex[0]])
+			self.dataDeselectedBox.activate(currentIndex[0]+1)
+			self.dataDeselectedBox.delete(currentIndex)
+			del self.deselectedList[currentIndex[0]]
+		else:
+			self.statusVar.set('Nothing Selected to Move')
+		return
+
+	def deselectData(self):
+		currentIndex = self.dataSelectedBox.curselection()
+		if currentIndex:
+			currDataSet = self.dataSelectedBox.get(currentIndex)
+			self.dataDeselectedBox.insert(END,currDataSet)
+			self.deselectedList.append(self.selectedList[currentIndex[0]])
+			self.dataSelectedBox.activate(currentIndex[0]+1)
+			self.dataSelectedBox.delete(currentIndex)
+			del self.selectedList[currentIndex[0]]
+		else:
+			self.statusVar.set('Nothing Selected to Move')
+		return
+
+	def outputCSV(self):
+		print self.selectedList
+		return
 
 	def getFileList(self):
 		return self.fileList
@@ -368,6 +455,10 @@ class CSVGenerator:
 	def closeFile(self):
 		self.csvfile.close()
 
+def runAnalysis(timeList,fileList):
+	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
+	return DataTracker(dataAnalyzerList)
+
 def main():
 	DEBUG = False
 	for arg in sys.argv[1:]:
@@ -377,18 +468,20 @@ def main():
 	if DEBUG:
 		fileList = ['/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_0.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_15.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_2.csv']
 		timeList = [0.0, 15.0, 120.0]
+		runAnalysis(timeList,fileList)
 	else:
 		fileReader = FileReaderGUI()
 		fileReader.updateFiles()
-		fileList = fileReader.getFileList()
-		timeList = fileReader.getTimeList()
-
-	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
-	dataTracker = DataTracker(dataAnalyzerList)
-
-	csvGen = CSVGenerator(dataTracker,'test.csv')
+		# fileList = fileReader.getFileList()
+		# timeList = fileReader.getTimeList()
 
 	if False:
+		dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
+		dataTracker = DataTracker(dataAnalyzerList)
+
+		csvGen = CSVGenerator(dataTracker,'test.csv')
+
+	
 		persistentTrackedData_High = dataTracker.persistentTrackedData_High
 		heatMapArray = np.zeros((len(persistentTrackedData_High),len(persistentTrackedData_High[0])))
 		i = 0;
