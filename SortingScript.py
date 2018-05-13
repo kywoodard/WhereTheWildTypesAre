@@ -261,9 +261,11 @@ class DataTracker:
 			for dataAnalyzer in self.dataAnalyzerList:
 				rawData = dataAnalyzer.getRawData()
 				for rawDatapoint in rawData:
+					labeledData = []
 					if rawDatapoint[0] == dataName:
-						rawDatapoint.append(dataAnalyzer.getTimeValue())
-						trackedDataGroup.append(rawDatapoint)
+						labeledData.append(dataAnalyzer.getTimeValue())
+						labeledData.extend(rawDatapoint)
+						trackedDataGroup.append(labeledData)
 						break
 			#Append the datagroup into the larger dataset
 			self.trackedDataSet_High.append(trackedDataGroup)
@@ -275,9 +277,11 @@ class DataTracker:
 			for dataAnalyzer in self.dataAnalyzerList:
 				rawData = dataAnalyzer.getRawData()
 				for rawDatapoint in rawData:
+					labeledData = []
 					if rawDatapoint[0] == dataName:
-						rawDatapoint.append(dataAnalyzer.getTimeValue())
-						trackedDataGroup.append(rawDatapoint)
+						labeledData.append(dataAnalyzer.getTimeValue())
+						labeledData.extend(rawDatapoint)
+						trackedDataGroup.append(labeledData)
 						break
 			#Append the datagroup into the larger dataset
 			self.trackedDataSet_Low.append(trackedDataGroup)
@@ -356,12 +360,8 @@ class CSVGenerator:
 		self.csvwriter.writerow([title])
 		self.writeColumnTitles()
 		for dataGroup in dataCluster:
-			counter = 0
 			for datapoint in dataGroup:
-				dataRow=[self.dataTracker.dataAnalyzerList[counter].timeValue]
-				dataRow.extend(datapoint)
-				self.csvwriter.writerow(dataRow)
-				counter+=1
+				self.csvwriter.writerow(datapoint)
 		self.csvwriter.writerow('')
 		
 	def closeFile(self):
@@ -369,14 +369,60 @@ class CSVGenerator:
 
 
 if __name__ == "__main__":
-	fileReader = FileReaderGUI()
-	fileReader.updateFiles()
-	fileList = fileReader.getFileList()
-	timeList = fileReader.getTimeList()
-	# fileList = ['/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_0.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_15.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_2.csv']
-	# timeList = [0.0, 15.0, 120.0]
+	# fileReader = FileReaderGUI()
+	# fileReader.updateFiles()
+	# fileList = fileReader.getFileList()
+	# timeList = fileReader.getTimeList()
+	fileList = ['/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_0.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_15.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_2.csv']
+	timeList = [0.0, 15.0, 120.0]
 
 	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
 	dataTracker = DataTracker(dataAnalyzerList)
 
 	csvGen = CSVGenerator(dataTracker,'test.csv')
+
+	if False:
+		persistentTrackedData_High = dataTracker.persistentTrackedData_High
+		heatMapArray = np.zeros((len(persistentTrackedData_High),len(persistentTrackedData_High[0])))
+		i = 0;
+		j = 0;
+		titles = []
+		for dataGroup in persistentTrackedData_High:
+			j = 0
+			titles.append(persistentTrackedData_High[i][j][0])
+			for datapoint in dataGroup:
+				heatMapArray[i][j] = persistentTrackedData_High[i][j][5]
+				j+= 1
+			i+=1
+
+		colors =  [(0, 0, 0.5),(1, 1, 0)]
+		cm = LinearSegmentedColormap.from_list(
+	    'PrincessPerfection', colors, N=100)
+
+		plt.ioff()
+		fig, ax = plt.subplots()
+		heatmap = ax.imshow(heatMapArray,interpolation='nearest', cmap=cm)
+		plt.colorbar(heatmap)
+
+		# We want to show all ticks...
+		ax.set_xticks(np.arange(len(timeList)))
+		ax.set_yticks(np.arange(len(titles)))
+		# ... and label them with the respective list entries
+		ax.set_xticklabels(timeList)
+		ax.set_yticklabels(titles)
+
+		# Rotate the tick labels and set their alignment.
+		plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+		         rotation_mode="anchor")
+
+		# Loop over data dimensions and create text annotations.
+		# for i in range(len(timeList)):
+		#     for j in range(len(titles)):
+		#         text = ax.text(j, i, heatMapArray[i, j],
+		#                        ha="center", va="center", color="w")
+
+		ax.set_title("Heat Map")
+		fig.tight_layout()
+		plt.show()
+		# while 1:
+		# 	time.sleep(10)

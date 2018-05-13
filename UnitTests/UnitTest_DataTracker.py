@@ -38,22 +38,22 @@ class TestDataTracker(unittest.TestCase):
 			self.assertTrue(len(trackedDataHigh[i])<=self.numDAs,'One of the datasets in trackedDataHigh is longer than the number of analyzers')
 
 			#Verify that the time value exists in the list
-			dataSetName = trackedDataHigh[i][0][0]
+			dataSetName = trackedDataHigh[i][0][1]
 			for data in trackedDataHigh[i]:
 				timeCheck = False
 				for timeVal in self.timeList:
-					if data[9] == timeVal:
+					if data[0] == timeVal:
 						timeCheck = True
 						break
 				self.assertTrue(timeCheck,'Appended time value does not exist in the default timeList for trackedDataHigh')
 
 				#Check that the data name is consistent across the dataset
-				self.assertEqual(dataSetName,data[0],'Data names did not match within one data set')
+				self.assertEqual(dataSetName,data[1],'Data names did not match within one data set')
 
 			#Check for nonunique data names
 			for j in range(i+1,len(trackedDataHigh)):
-				self.assertTrue(trackedDataHigh[i][0][0]!=
-								trackedDataHigh[j][0][0],
+				self.assertTrue(trackedDataHigh[i][0][1]!=
+								trackedDataHigh[j][0][1],
 								'High tracked values have nonunique items')
 
 		trackedDataLow = self.DT.getTrackedDataLow()
@@ -65,22 +65,22 @@ class TestDataTracker(unittest.TestCase):
 			self.assertTrue(len(trackedDataLow[i])<=self.numDAs,'One of the datasets in trackedDataLow is longer than the number of analyzers')
 
 			#Verify that the time value exists in the list
-			dataSetName = trackedDataLow[i][0][0]
+			dataSetName = trackedDataLow[i][0][1]
 			for data in trackedDataLow[i]:
 				timeCheck = False
 				for timeVal in self.timeList:
-					if data[9] == timeVal:
+					if data[0] == timeVal:
 						timeCheck = True
 						break
 				self.assertTrue(timeCheck,'Appended time value does not exist in the default timeList for trackedDataLow')
 
 				#Check that the data name is consistent across the dataset
-				self.assertEqual(dataSetName,data[0],'Data names did not match within one data set')
+				self.assertEqual(dataSetName,data[1],'Data names did not match within one data set')
 
 			#Check for nonunique data names
 			for j in range(i+1,len(trackedDataLow)):
-				self.assertTrue(trackedDataLow[i][0][0]!=
-								trackedDataLow[j][0][0],
+				self.assertTrue(trackedDataLow[i][0][1]!=
+								trackedDataLow[j][0][1],
 								'Low tracked values have nonunique items')
 
 	def test_PersistentData(self):
@@ -90,7 +90,7 @@ class TestDataTracker(unittest.TestCase):
 			DA_index = 0
 			for data in dataSet:
 				#TODO: Evaluate if this needs to not be hardcoded
-				self.assertEqual(data[9],self.timeList[DA_index],'Data in  persistentTrackedData_High set is not same length as the file list provided')
+				self.assertEqual(data[0],self.timeList[DA_index],'Data in  persistentTrackedData_High set is not same length as the file list provided')
 				DA_index+=1
 
 		#Check that the low persistent data has the same size as the number input datsets
@@ -99,7 +99,7 @@ class TestDataTracker(unittest.TestCase):
 			DA_index = 0
 			for data in dataSet:
 				#TODO: Evaluate if this needs to not be hardcoded
-				self.assertEqual(data[9],self.timeList[DA_index],'Data in  persistentTrackedData_Low set is not same length as the file list provided')
+				self.assertEqual(data[0],self.timeList[DA_index],'Data in  persistentTrackedData_Low set is not same length as the file list provided')
 				DA_index+=1
 
 if __name__ == '__main__':
