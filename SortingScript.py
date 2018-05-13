@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import time
+import sys
 
 
 class FileReaderGUI:
@@ -315,7 +316,7 @@ class DataTracker:
 		self.persistentTrackedData_Low =[]
 		self.persistentTrackedData_High = []
 
-		#Get all the datagroups that are significant during the full tiem range
+		#Get all the datagroups that are significant during the full time range
 		for dataset in self.trackedDataSet_Low:
 			if len(dataset)==lengthList:
 				self.persistentTrackedData_Low.append(dataset)
@@ -367,14 +368,20 @@ class CSVGenerator:
 	def closeFile(self):
 		self.csvfile.close()
 
+def main():
+	DEBUG = False
+	for arg in sys.argv[1:]:
+		if arg.lower() == 'debug':
+			DEBUG = True
 
-if __name__ == "__main__":
-	# fileReader = FileReaderGUI()
-	# fileReader.updateFiles()
-	# fileList = fileReader.getFileList()
-	# timeList = fileReader.getTimeList()
-	fileList = ['/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_0.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_15.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_2.csv']
-	timeList = [0.0, 15.0, 120.0]
+	if DEBUG:
+		fileList = ['/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_0.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_15.csv', '/Users/kywoodard/Documents/WhereTheWildTypesAre/Data/WTvsMut_2.csv']
+		timeList = [0.0, 15.0, 120.0]
+	else:
+		fileReader = FileReaderGUI()
+		fileReader.updateFiles()
+		fileList = fileReader.getFileList()
+		timeList = fileReader.getTimeList()
 
 	dataAnalyzerList = [DataAnalyzer(fileList[i],timeList[i]) for i in range(len(fileList))]
 	dataTracker = DataTracker(dataAnalyzerList)
@@ -426,3 +433,8 @@ if __name__ == "__main__":
 		plt.show()
 		# while 1:
 		# 	time.sleep(10)
+
+
+if __name__ == "__main__":
+	main()
+	
