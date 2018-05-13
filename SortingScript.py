@@ -85,7 +85,7 @@ class FileReaderGUI:
 		if self.timeList:
 			# self.finishedUpdate = True
 			self.statusVar.set('')
-			dataTracker = runAnalysis(self.timeList,self.fileList)
+			self.dataTracker = runAnalysis(self.timeList,self.fileList)
 
 			#Resize the screen
 			self.root.geometry("1000x275")
@@ -114,8 +114,12 @@ class FileReaderGUI:
 			self.deselectButton = tk.Button(self.selectionFrame,text='<<',command=self.deselectData)
 			self.deselectButton.pack(side = TOP,padx=5)
 
-			#Deselect Button
-			self.CSVButton = tk.Button(self.outputFrame,text='CSV Output',command=self.outputCSV)
+			#CSV Output Frame
+			self.CSVOutFrame = tk.LabelFrame(self.outputFrame,labelanchor='n',text='Add filename (default is "output")')
+			self.CSVFileEntry = tk.Entry(self.CSVOutFrame)
+			self.CSVButton = tk.Button(self.CSVOutFrame,text='CSV Output',command=self.outputCSV)
+			self.CSVButton.pack(side=RIGHT)
+			self.CSVFileEntry.pack(side=RIGHT)
 			
 			#Packing
 			self.yDataSelectedScroll.pack(side = RIGHT,fill=Y)
@@ -125,22 +129,20 @@ class FileReaderGUI:
 			
 			self.dataDeselectedBox.pack(side = RIGHT,fill=BOTH,expand=1,padx=5,pady=5)
 			self.dataSelectionFrame.pack(side=TOP,fill=BOTH,expand=1)
-			self.CSVButton.pack(side=TOP,pady=5)
+			self.CSVOutFrame.pack(side=TOP,pady=5)
 			self.outputFrame.pack(side=RIGHT,fill=BOTH,expand=1)
 
-			self.addDataSets(dataTracker)
+			self.addDataSets(self.dataTracker)
 		else:
 			self.statusVar.set('Cannot run data analysis without any files added')
 
 	def addDataSets(self,dataTracker):
-		self.dataDeselectedBox.insert(0,'High_Tracked_Dataset')
-		self.deselectedList.append('trackedDataSet_High')
-		self.dataDeselectedBox.insert(1,'Low_Tracked_Dataset')
-		self.deselectedList.append('trackedDataSet_Low')
-		self.dataDeselectedBox.insert(2,'High_Persistent_Tracked_Dataset')
-		self.deselectedList.append('persistentTrackedData_High')
-		self.dataDeselectedBox.insert(3,'Low_Persistent_Tracked_Dataset')
-		self.deselectedList.append('persistentTrackedData_Low')
+		nameList = ['High_Tracked_Dataset','Low_Tracked_Dataset','High_Persistent_Tracked_Dataset','Low_Persistent_Tracked_Dataset']
+
+		#Loop after the nameList and add all to the deselected box and list
+		for idx, name in enumerate(nameList):
+			self.dataDeselectedBox.insert(idx,name)
+			self.deselectedList.append(name)
 
 	def updateFiles(self):
 		while not self.finishedUpdate:
@@ -194,8 +196,13 @@ class FileReaderGUI:
 		return
 
 	def outputCSV(self):
-		print self.selectedList
-		return
+		filename = self.CSVFileEntry.get()
+		self.CSVFileEntry.delete(0,tk.END)
+		if filename:
+			filename = filename + '.csv'
+		else:
+			filename = 'output.csv'
+		CSVGenerator(self.dataTracker,filename,self.selectedList)
 
 	def getFileList(self):
 		return self.fileList
@@ -422,7 +429,7 @@ class DataTracker:
 		return self.persistentTrackedData_High
 
 class CSVGenerator:
-	def __init__(self, dataTracker,filename):
+	def __init__(self, dataTracker,filename,dataNameList):
 		self.dataTracker = dataTracker
 		try:
 			os.remove(filename)
@@ -431,12 +438,23 @@ class CSVGenerator:
 
 		self.csvfile = open(filename, 'w+')
 		self.csvwriter = csv.writer(self.csvfile, delimiter=',')
-		self.writeToFile()
+		self.writeToFile(dataNameList)
 
-	def writeToFile(self):
+	def writeToFile(self,dataNameList):
 		#Call functions for writing all the neccessary data
-		self.writeMultDataSet(self.dataTracker.persistentTrackedData_High,'persistentTrackedData_High')
-		self.writeMultDataSet(self.dataTracker.persistentTrackedData_Low,'persistentTrackedData_Low')
+		nameList = ['High_Tracked_Dataset','Low_Tracked_Dataset','High_Persistent_Tracked_Dataset','Low_Persistent_Tracked_Dataset']
+		for dataName in dataNameList:
+			if dataName == 'High_Persistent_Tracked_Dataset':
+				self.writeMultDataSet(self.dataTracker.getPersistentTrackedDataHigh(),
+					'High_Persistent_Tracked_Dataset')
+			if dataName == 'Low_Persistent_Tracked_Dataset':
+				self.writeMultDataSet(self.dataTracker.getPersistentTrackedDataLow(),'Low_Persistent_Tracked_Dataset')
+			if dataName == 'High_Tracked_Dataset':
+				self.writeMultDataSet(self.dataTracker.getTrackedDataHigh(),
+					'High_Tracked_Dataset')
+			if dataName == 'Low_Tracked_Dataset':
+				self.writeMultDataSet(self.dataTracker.getTrackedDataLow(),
+					'Low_Tracked_Dataset')
 		self.closeFile()
 
 	def writeColumnTitles(self):
